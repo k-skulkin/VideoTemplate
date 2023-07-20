@@ -5,24 +5,28 @@ final class TemplateAssembly {
 
 	// MARK: - Static
 
-	static let shared = TemplateAssembly()
+	static let shared = TemplateAssembly(
+		fileManager: .default,
+		templateInfoFactory: .shared,
+		videoWriterActionsFactory: .shared
+	)
 
 	// MARK: - Properties
 
-	private let backgroundsSeparator: BackgroundsSeparator
 	private let fileManager: FileManager
 	private let templateInfoFactory: TemplateInfoFactory
+	private let videoWriterActionsFactory: VideoWriterActionsFactory
 
 	// MARK: - Init
 
 	init(
-		backgroundsSeparator: BackgroundsSeparator = .shared,
-		fileManager: FileManager = .default,
-		templateInfoFactory: TemplateInfoFactory = .shared
+		fileManager: FileManager,
+		templateInfoFactory: TemplateInfoFactory,
+		videoWriterActionsFactory: VideoWriterActionsFactory
 	) {
-		self.backgroundsSeparator = backgroundsSeparator
 		self.fileManager = fileManager
 		self.templateInfoFactory = templateInfoFactory
+		self.videoWriterActionsFactory = videoWriterActionsFactory
 	}
 
 }
@@ -36,9 +40,9 @@ extension TemplateAssembly {
 		output: TemplateContract.Output
 	) -> some View {
 		let viewModel = TemplateViewModel(
-			backgroundsSeparator: backgroundsSeparator,
 			fileManager: fileManager,
 			templateInfoFactory: templateInfoFactory,
+			videoWriterActionsFactory: videoWriterActionsFactory,
 			input: input,
 			output: output
 		)

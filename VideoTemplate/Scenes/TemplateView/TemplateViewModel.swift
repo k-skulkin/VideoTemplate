@@ -9,54 +9,53 @@ final class TemplateViewModel: ObservableObject {
 
 	// MARK: Public
 
-	@Published private(set) var background: TemplateViewBackground = .color()
+	@Published private(set) var background: TemplateViewBackground = .progressIndicator
 
 	// MARK: Private
 
-	private let backgroundsSeparator: BackgroundsSeparator
 	private let fileManager: FileManager
-
-	private let templateImages: [TemplateImage]
+	private let videoWriterActionsFactory: VideoWriterActionsFactory
 
 	// MARK: Input
 
-	private let templateSize: CGSize
 	private let templateActions: [TemplateAction]
+	private let templateSize: CGSize
 
 	// MARK: - Init
 
 	init(
-		backgroundsSeparator: BackgroundsSeparator,
 		fileManager: FileManager,
 		templateInfoFactory: TemplateInfoFactory,
+		videoWriterActionsFactory: VideoWriterActionsFactory,
 		input: TemplateContract.Input,
 		output: TemplateContract.Output
 	) {
-		self.backgroundsSeparator = backgroundsSeparator
 		self.fileManager = fileManager
+		self.videoWriterActionsFactory = videoWriterActionsFactory
 
 		let info = templateInfoFactory.info(by: input.template)
 
-		templateSize = info.size
 		templateActions = info.actions
-
-		templateImages = templateActions.map {
-			$0.templateImage
-		}.uniqued()
+		templateSize = info.size
 	}
 
 	// MARK: - Public methods
 
 	public func onAppear() {
-		do {
-			try fetchVideo()
-		} catch {
-			print(error)
+		Task(priority: .background) {
+			let actions = try await videoWriterActionsFactory.prepareActions(
+				templateActions: templateActions,
+				templateSize: templateSize
+			)
+
+			DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+				self?.fetchVideo(with: actions)
+			}
 		}
 	}
 
 	public func onShareButton() {
-
+		
 	}
 
 }
@@ -65,7 +64,9 @@ final class TemplateViewModel: ObservableObject {
 
 extension TemplateViewModel {
 
-	private func fetchVideo() throws {
+	private func fetchVideo(
+		with actions: [VideoWriterAction]
+	) {
 		let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
 
 		guard let documentDirectory = urls.first
@@ -87,28 +88,22 @@ extension TemplateViewModel {
 		guard
 			let videoWriter = VideoWriter(
 				url: videoOutputUrl,
-				width: 1170,
-				height: 1705,
-				sessionStartTime: .zero,
-				isRealTime: false,
-				queue: .main
+				width: Int(templateSize.width),
+				height: Int(templateSize.height),
+				sessionStartTime: .zero
 			)
 		else { fatalError("Failed to create VideoWriter") }
 
-		let assets = try getAssets()
-
-		for action in templateActions {
-			guard let asset = assets[action.templateImage] else {
-				fatalError("No expected assset")
-			}
-
+		for action in actions {
 			videoWriter.add(
-				image: asset.getImage(by: action.templateImageType),
+				image: action.image,
 				presentationTime: action.time
 			)
 		}
 
-		videoWriter.finish { [weak self] asset in
+		videoWriter.finish(
+			in: .main
+		) { [weak self] asset in
 			guard let asset else { fatalError() }
 
 			self?.background = .video(
@@ -120,38 +115,6 @@ extension TemplateViewModel {
 				)
 			)
 		}
-	}
-
-	private func getAssets() throws -> [TemplateAsset] {
-		try templateImages.map { templateImage in
-			let original = templateImage.uiImage
-			let response = try backgroundsSeparator.separateBackground(
-				from: original
-			)
-
-			return TemplateAsset(
-				original: original,
-				person: response.persons,
-				background: response.background,
-				templateImage: templateImage
-			)
-		}
-	}
-
-}
-
-// MARK: - Private extension
-
-private extension Array where Element == TemplateAsset {
-
-	subscript(type: TemplateImage) -> TemplateAsset? {
-		guard
-			let processedImage = first(
-				where: { $0.templateImage == type }
-			)
-		else { return nil }
-
-		return processedImage
 	}
 
 }

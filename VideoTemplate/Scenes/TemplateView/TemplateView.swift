@@ -19,9 +19,9 @@ struct TemplateView: View {
 		ZStack(alignment: .bottom) {
 			backgroundView()
 
-			shareButton()
-				.padding(.bottom, 32)
-				.padding(.horizontal)
+//			shareButton()
+//				.padding(.bottom, 32)
+//				.padding(.horizontal)
 		}
 		.ignoresSafeArea()
 		.onAppear {
@@ -57,8 +57,14 @@ extension TemplateView {
 	@ViewBuilder
 	private func backgroundView() -> some View {
 		switch viewModel.background {
-		case let .color(color):
-			color
+		case .progressIndicator:
+			ProgressView()
+				.controlSize(.large)
+				.progressViewStyle(
+					CircularProgressViewStyle(
+						tint: .white.opacity(0.5)
+					)
+				)
 
 		case let .video(viewModel):
 			VideoPlayerView(viewModel: viewModel)

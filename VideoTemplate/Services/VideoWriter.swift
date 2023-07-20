@@ -52,7 +52,7 @@ final class VideoWriter {
 		else { return nil }
 
 		let sourceBufferAttributes: [String: Any] = [
-			String(kCVPixelBufferPixelFormatTypeKey): kCVPixelFormatType_32RGBA, // yes, ARGB is right here for images...
+			String(kCVPixelBufferPixelFormatTypeKey): kCVPixelFormatType_32ARGB, // yes, ARGB is right here for images...
 			String(kCVPixelBufferWidthKey): width,
 			String(kCVPixelBufferHeightKey): height,
 		]

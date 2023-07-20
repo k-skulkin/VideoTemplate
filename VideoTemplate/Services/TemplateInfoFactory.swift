@@ -10,7 +10,7 @@ final class TemplateInfoFactory {
 	func info(by template: Template) -> TemplateInfo {
 		switch template {
 		case .casual:
-			TemplateInfo(
+			return TemplateInfo(
 				size: CGSize(width: 1170, height: 1705),
 				actions: [
 					TemplateAction(
@@ -30,6 +30,7 @@ final class TemplateInfoFactory {
 					)
 				]
 			)
+			
 		}
 	}
 

@@ -19,7 +19,6 @@
 		1A0C41A22A691E9200955753 /* VideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0C41A02A691E9200955753 /* VideoPlayer.swift */; };
 		1A0C41A42A691ECC00955753 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0C41A32A691ECC00955753 /* PlayerView.swift */; };
 		1A0C41A72A6929A000955753 /* TemplateViewBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0C41A62A6929A000955753 /* TemplateViewBackground.swift */; };
-		1A0C41AC2A69341C00955753 /* VideoGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0C41AB2A69341C00955753 /* VideoGenerator.swift */; };
 		1ACA37EA2A6938810086BCF4 /* PersonSegmentator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACA37E92A6938810086BCF4 /* PersonSegmentator.swift */; };
 		1ACA37EC2A6939D60086BCF4 /* BackgroundsSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACA37EB2A6939D60086BCF4 /* BackgroundsSeparator.swift */; };
 		1ACA37EE2A6946430086BCF4 /* TemplateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACA37ED2A6946430086BCF4 /* TemplateInfo.swift */; };
@@ -46,7 +45,6 @@
 		1A0C41A02A691E9200955753 /* VideoPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
 		1A0C41A32A691ECC00955753 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		1A0C41A62A6929A000955753 /* TemplateViewBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateViewBackground.swift; sourceTree = "<group>"; };
-		1A0C41AB2A69341C00955753 /* VideoGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoGenerator.swift; sourceTree = "<group>"; };
 		1ACA37E92A6938810086BCF4 /* PersonSegmentator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonSegmentator.swift; sourceTree = "<group>"; };
 		1ACA37EB2A6939D60086BCF4 /* BackgroundsSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundsSeparator.swift; sourceTree = "<group>"; };
 		1ACA37ED2A6946430086BCF4 /* TemplateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateInfo.swift; sourceTree = "<group>"; };
@@ -125,7 +123,6 @@
 				1ACA37EB2A6939D60086BCF4 /* BackgroundsSeparator.swift */,
 				1ACA37E92A6938810086BCF4 /* PersonSegmentator.swift */,
 				1ACA37FD2A6963170086BCF4 /* TemplateInfoFactory.swift */,
-				1A0C41AB2A69341C00955753 /* VideoGenerator.swift */,
 				1A0C41992A691B4300955753 /* VideoWriter.swift */,
 			);
 			path = Services;
@@ -281,7 +278,6 @@
 				1A0C41A72A6929A000955753 /* TemplateViewBackground.swift in Sources */,
 				1A0C41932A6918A900955753 /* TemplateAssembly.swift in Sources */,
 				1A0C41962A6918A900955753 /* TemplateView.swift in Sources */,
-				1A0C41AC2A69341C00955753 /* VideoGenerator.swift in Sources */,
 				1ACA37EE2A6946430086BCF4 /* TemplateInfo.swift in Sources */,
 				1A0C41952A6918A900955753 /* TemplateViewModel.swift in Sources */,
 				1A0C41942A6918A900955753 /* TemplateContract.swift in Sources */,

@@ -8,7 +8,19 @@ final class VideoMerger {
 
 	// MARK: - Static
 
-	static let srared = VideoMerger()
+	static let shared = VideoMerger(
+		fileManager: .default
+	)
+
+	// MARK: - Properties
+
+	private let fileManager: FileManager
+
+	// MARK: - Init
+
+	init(fileManager: FileManager) {
+		self.fileManager = fileManager
+	}
 
 	// MARK: - Public methods
 
@@ -75,12 +87,18 @@ final class VideoMerger {
 			at: CMTime.zero
 		)
 
-		// Exporting
-		let savePathUrl: URL = URL(fileURLWithPath: NSHomeDirectory() + "/Documents/newVideo.mp4")
+		let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
 
-		do { // delete old video
-			try FileManager.default.removeItem(at: savePathUrl)
-		} catch { print(error.localizedDescription) }
+		guard let documentDirectory = urls.first
+		else { fatalError("Failed to get Document Directory url") }
+
+		let videoOutputUrl = documentDirectory.appendingPathComponent(
+			"VideoTemplate.mp4"
+		)
+
+		if fileManager.fileExists(atPath: videoOutputUrl.path()) {
+			try fileManager.removeItem(at: videoOutputUrl)
+		}
 
 		guard
 			let assetExport = AVAssetExportSession(
@@ -90,14 +108,14 @@ final class VideoMerger {
 		else { throw VideoMergerError.failedExportSessionCreation }
 
 		assetExport.outputFileType = AVFileType.mp4
-		assetExport.outputURL = savePathUrl
+		assetExport.outputURL = videoOutputUrl
 		assetExport.shouldOptimizeForNetworkUse = true
 
 		await assetExport.export()
 
 		switch assetExport.status {
 		case .completed:
-			return savePathUrl
+			return videoOutputUrl
 
 		case .cancelled:
 			throw VideoMergerError.exportCancelled

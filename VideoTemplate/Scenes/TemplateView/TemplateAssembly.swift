@@ -8,6 +8,7 @@ final class TemplateAssembly {
 	static let shared = TemplateAssembly(
 		fileManager: .default,
 		templateInfoFactory: .shared,
+		videoMerger: .shared,
 		videoWriterActionsFactory: .shared
 	)
 
@@ -15,6 +16,7 @@ final class TemplateAssembly {
 
 	private let fileManager: FileManager
 	private let templateInfoFactory: TemplateInfoFactory
+	private let videoMerger: VideoMerger
 	private let videoWriterActionsFactory: VideoWriterActionsFactory
 
 	// MARK: - Init
@@ -22,10 +24,12 @@ final class TemplateAssembly {
 	init(
 		fileManager: FileManager,
 		templateInfoFactory: TemplateInfoFactory,
+		videoMerger: VideoMerger,
 		videoWriterActionsFactory: VideoWriterActionsFactory
 	) {
 		self.fileManager = fileManager
 		self.templateInfoFactory = templateInfoFactory
+		self.videoMerger = videoMerger
 		self.videoWriterActionsFactory = videoWriterActionsFactory
 	}
 
@@ -42,6 +46,7 @@ extension TemplateAssembly {
 		let viewModel = TemplateViewModel(
 			fileManager: fileManager,
 			templateInfoFactory: templateInfoFactory,
+			videoMerger: videoMerger,
 			videoWriterActionsFactory: videoWriterActionsFactory,
 			input: input,
 			output: output

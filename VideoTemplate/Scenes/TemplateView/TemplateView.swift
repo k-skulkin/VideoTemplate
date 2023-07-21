@@ -21,8 +21,12 @@ struct TemplateView: View {
 
 			contentView()
 		}
-		.overlay {
-			overlayView()
+		.overlay(alignment: .bottom) {
+			if viewModel.isShareButtonVisible {
+				shareButton()
+					.padding(.bottom, 32)
+					.padding(.horizontal)
+			}
 		}
 		.ignoresSafeArea()
 		.onAppear {

@@ -16,6 +16,7 @@ final class TemplateViewModel: ObservableObject {
 	// MARK: Private
 
 	private let fileManager: FileManager
+	private let videoMerger: VideoMerger
 	private let videoWriterActionsFactory: VideoWriterActionsFactory
 
 	private var assetUrl: URL?
@@ -31,11 +32,13 @@ final class TemplateViewModel: ObservableObject {
 	init(
 		fileManager: FileManager,
 		templateInfoFactory: TemplateInfoFactory,
+		videoMerger: VideoMerger,
 		videoWriterActionsFactory: VideoWriterActionsFactory,
 		input: TemplateContract.Input,
 		output: TemplateContract.Output
 	) {
 		self.fileManager = fileManager
+		self.videoMerger = videoMerger
 		self.videoWriterActionsFactory = videoWriterActionsFactory
 
 		let info = templateInfoFactory.info(by: input.template)
@@ -111,7 +114,7 @@ extension TemplateViewModel {
 		else { fatalError("Failed to get Document Directory url") }
 
 		let videoOutputUrl = documentDirectory.appendingPathComponent(
-			"OutputVideo.mp4"
+			"VideoTemplateWithoutSound.mp4"
 		)
 		let videoOutputPath = videoOutputUrl.path()
 
@@ -160,7 +163,7 @@ extension TemplateViewModel {
 		else { return showVideo(at: videoAsset.url) }
 
 		Task(priority: .background) {
-			let mergedVideoUrl = try await VideoMerger.srared.merge(
+			let mergedVideoUrl = try await videoMerger.merge(
 				videoUrl: videoAsset.url,
 				audioUrl: audioUrl
 			)
@@ -177,7 +180,7 @@ extension TemplateViewModel {
 				notificationCenter: .default,
 				url: url,
 				isRepeating: true,
-				avLayerVideoGravity: .resizeAspectFill
+				avLayerVideoGravity: .resizeAspect
 			)
 		)
 

@@ -3,27 +3,45 @@ import UIKit
 
 extension UIImage {
 
-	func rotate(radians: CGFloat) -> UIImage {
-		let rotatedSize = CGRect(origin: .zero, size: size)
-			.applying(CGAffineTransform(rotationAngle: CGFloat(radians)))
-			.integral.size
+	func rotate(radians: CGFloat) -> UIImage? {
+		var newSize = CGRect(
+			origin: .zero,
+			size: size
+		).applying(
+			CGAffineTransform(
+				rotationAngle: CGFloat(radians)
+			)
+		).size
 
-		UIGraphicsBeginImageContext(rotatedSize)
+		// Trim off the extremely small float value
+		// to prevent core graphics from rounding it up
+		newSize.width = floor(newSize.width)
+		newSize.height = floor(newSize.height)
 
-		if let context = UIGraphicsGetCurrentContext() {
-			let origin = CGPoint(x: rotatedSize.width / 2.0,
-								 y: rotatedSize.height / 2.0)
-			context.translateBy(x: origin.x, y: origin.y)
-			context.rotate(by: radians)
-			draw(in: CGRect(x: -origin.y, y: -origin.x,
-							width: size.width, height: size.height))
-			let rotatedImage = UIGraphicsGetImageFromCurrentImageContext()
-			UIGraphicsEndImageContext()
+		UIGraphicsBeginImageContextWithOptions(newSize, false, scale)
 
-			return rotatedImage ?? self
-		}
+		guard let context = UIGraphicsGetCurrentContext() else { return nil }
 
-		return self
+		context.translateBy(
+			x: newSize.width / 2,
+			y: newSize.height / 2
+		)
+		context.rotate(by: CGFloat(radians))
+		
+		draw(
+			in: CGRect(
+				x: -size.width / 2,
+				y: -size.height / 2,
+				width: size.width,
+				height: size.height
+			)
+		)
+
+		let newImage = UIGraphicsGetImageFromCurrentImageContext()
+
+		UIGraphicsEndImageContext()
+
+		return newImage
 	}
 
 }

@@ -95,8 +95,11 @@ private extension VideoWriterActionsFactory {
 				by: layer.templateImageType
 			)
 
-			if layer.rotation != 0 {
-				usedImage = usedImage.rotate(radians: layer.rotation)
+			if
+				layer.rotation != 0,
+				let rotatedImage = usedImage.rotate(radians: layer.rotation)
+			{
+				usedImage = rotatedImage
 			}
 
 			if layer.sizeScale != 1 {
@@ -122,7 +125,7 @@ private extension VideoWriterActionsFactory {
 	private func image(
 		size: CGSize,
 		color: UIColor = .clear,
-		scale: CGFloat = UIScreen.main.scale,
+		scale: CGFloat = 1,
 		opaque: Bool = false
 	) -> UIImage? {
 		let rect = CGRectMake(0, 0, size.width, size.height)

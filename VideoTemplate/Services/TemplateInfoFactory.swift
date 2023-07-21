@@ -12,13 +12,10 @@ final class TemplateInfoFactory {
 	func info(by template: Template) -> TemplateInfo {
 		switch template {
 		case .casual:
-			let duration = 11.0
-
 			return TemplateInfo(
 				size: CGSize(width: 1170, height: 1705),
-				duration: duration,
 				audio: .casual,
-				actions: casualActions(duration: duration)
+				actions: casualActions()
 			)
 			
 		}
@@ -30,7 +27,7 @@ final class TemplateInfoFactory {
 
 extension TemplateInfoFactory {
 
-	private func casualActions(duration: TimeInterval) -> [TemplateAction] {
+	private func casualActions() -> [TemplateAction] {
 		[
 			TemplateAction(
 				time: CMTimeMake(value: 0, timescale: 60),
@@ -166,9 +163,9 @@ extension TemplateInfoFactory {
 					TemplateLayer(
 						templateImage: .image5,
 						templateImageType: .background,
-						offset: CGPoint(x: 200, y: 0),
-						rotation: .pi / 17,
-						sizeScale: 1.05
+						offset: CGPoint(x: -350, y: 0),
+						rotation: .pi / 20,
+						sizeScale: 1.3
 					)
 				]
 			),
@@ -182,8 +179,8 @@ extension TemplateInfoFactory {
 					TemplateLayer(
 						templateImage: .image5,
 						templateImageType: .background,
-						offset: CGPoint(x: 200, y: 0),
-						rotation: .pi / 17
+						offset: CGPoint(x: -200, y: 0),
+						sizeScale: 1.15
 					)
 				]
 			),
@@ -197,8 +194,8 @@ extension TemplateInfoFactory {
 					TemplateLayer(
 						templateImage: .image5,
 						templateImageType: .background,
-						offset: CGPoint(x: 200, y: 0),
-						rotation: .pi / 17
+						offset: CGPoint(x: -200, y: 0),
+						sizeScale: 1.15
 					),
 					TemplateLayer(
 						templateImage: .image5,
@@ -240,6 +237,15 @@ extension TemplateInfoFactory {
 					TemplateLayer(
 						templateImage: .image6,
 						templateImageType: .person
+					)
+				]
+			),
+			TemplateAction(
+				time: CMTimeMake(value: 360, timescale: 60),
+				layers: [
+					TemplateLayer(
+						templateImage: .image6,
+						templateImageType: .original
 					)
 				]
 			),
@@ -483,7 +489,7 @@ extension TemplateInfoFactory {
 					TemplateLayer(
 						templateImage: .image9,
 						templateImageType: .background,
-						sizeScale: 1.1
+						sizeScale: 1.2
 					)
 				]
 			),

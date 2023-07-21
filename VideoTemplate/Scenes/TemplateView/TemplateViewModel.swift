@@ -180,7 +180,7 @@ extension TemplateViewModel {
 				notificationCenter: .default,
 				url: url,
 				isRepeating: true,
-				avLayerVideoGravity: .resizeAspect
+				avLayerVideoGravity: .resizeAspectFill
 			)
 		)
 

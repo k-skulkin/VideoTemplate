@@ -1,9 +1,3 @@
-//
-//  VideoMaker.swift
-//  TestVideoTemplate
-//
-//  Created by Skulkin Kirill on 20.07.2023.
-//
 
 import AVFoundation
 import Foundation
@@ -11,7 +5,8 @@ import UIKit
 
 final class VideoWriter {
 
-	fileprivate static var ciContext = CIContext() // we reuse a single context for performance reasons
+	/// - note: We reuse a single context for performance reasons.
+	fileprivate static var ciContext = CIContext()
 
 	private var writer: AVAssetWriter
 	private var writerInput: AVAssetWriterInput
@@ -49,7 +44,7 @@ final class VideoWriter {
 			String(kCVPixelBufferWidthKey): width,
 			String(kCVPixelBufferHeightKey): height,
 		]
-		pixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(
+		let pixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(
 			assetWriterInput: input,
 			sourcePixelBufferAttributes: sourceBufferAttributes
 		)
@@ -65,11 +60,12 @@ final class VideoWriter {
 
 		self.writer = writer
 		self.writerInput = input
+		self.pixelBufferAdaptor = pixelBufferAdaptor
 	}
 
 	@discardableResult
 	func append(action: VideoWriterAction) -> Bool {
-		add(image: action.image, presentationTime: action.time)
+		append(image: action.image, presentationTime: action.time)
 	}
 
 	func finish(
@@ -92,9 +88,14 @@ final class VideoWriter {
 						AVURLAssetPreferPreciseDurationAndTimingKey: true
 					]
 				)
-				let duration = CMTimeGetSeconds(asset.duration)
-				// can check for minimum duration here (ie. consider a failure if too short)
-				print("VideoWriter: finishWriting() complete, duration=\(duration)")
+
+				Task {
+					let duration = await CMTimeGetSeconds(
+						try asset.load(.duration)
+					)
+
+					print("VideoWriter: finishWriting() complete, duration=\(duration)")
+				}
 
 				completionBlock?(asset)
 			}
@@ -108,20 +109,18 @@ final class VideoWriter {
 extension VideoWriter {
 
 	@discardableResult
-	func add(image: UIImage, presentationTime: CMTime) -> Bool {
-		if writerInput.isReadyForMoreMediaData == false {
+	private func append(image: UIImage, presentationTime: CMTime) -> Bool {
+		guard writerInput.isReadyForMoreMediaData
+		else {
+			print("VideoWriter isn't ready for new image")
+
 			return false
 		}
 
-		if
-			pixelBufferAdaptor.appendPixelBufferForImage(
-				image,
-				presentationTime: presentationTime
-		) {
-			return true
-		}
-
-		return false
+		return pixelBufferAdaptor.appendPixelBuffer(
+			for: image,
+			presentationTime: presentationTime
+		)
 	}
 
 }
@@ -130,11 +129,15 @@ extension VideoWriter {
 
 private extension AVAssetWriterInputPixelBufferAdaptor {
 
-	func appendPixelBufferForImage(_ image: UIImage, presentationTime: CMTime) -> Bool {
+	func appendPixelBuffer(
+		for image: UIImage,
+		presentationTime: CMTime
+	) -> Bool {
 		var appendSucceeded = false
 
 		autoreleasepool {
-			guard let pixelBufferPool = pixelBufferPool else {
+			guard let pixelBufferPool
+			else {
 				// writer can have error:  writer.error=\(String(describing: self.writer.error))
 				print("appendPixelBufferForImage: ERROR - missing pixelBufferPool")
 				return
@@ -152,27 +155,36 @@ private extension AVAssetWriterInputPixelBufferAdaptor {
 				let pixelBuffer = pixelBufferPointer.pointee,
 				status == 0
 			{
-				pixelBuffer.fillPixelBufferFromImage(image)
+				pixelBuffer.fillPixelBuffer(from: image)
+
 				appendSucceeded = append(pixelBuffer, withPresentationTime: presentationTime)
 
 				if !appendSucceeded {
-					// If a result of NO is returned, clients can check the value of AVAssetWriter.status to determine whether the writing operation completed, failed, or was cancelled.  If the status is AVAssetWriterStatusFailed, AVAsset.error will contain an instance of NSError that describes the failure.
+					// If a result of NO is returned, clients can check the
+					// value of AVAssetWriter.status to determine whether
+					// the writing operation completed, failed, or was cancelled.
+					// If the status is AVAssetWriterStatusFailed,
+					// AVAsset.error will contain an instance of NSError
+					// that describes the failure.
 					print("VideoWriter appendPixelBufferForImage: ERROR appending")
 				}
 				pixelBufferPointer.deinitialize(count: 1)
 			} else {
-				print("VideoWriter appendPixelBufferForImage: ERROR - Failed to allocate pixel buffer from pool, status=\(status)") // -6680 = kCVReturnInvalidPixelFormat
+				// -6680 = kCVReturnInvalidPixelFormat
+				print("VideoWriter appendPixelBufferForImage: ERROR - Failed to allocate pixel buffer from pool, status=\(status)")
 			}
 
 			pixelBufferPointer.deallocate()
 		}
+
 		return appendSucceeded
 	}
+
 }
 
 private extension CVPixelBuffer {
 
-	func fillPixelBufferFromImage(_ image: UIImage) {
+	func fillPixelBuffer(from image: UIImage) {
 		CVPixelBufferLockBaseAddress(self, [])
 
 		if let cgImage = image.cgImage {

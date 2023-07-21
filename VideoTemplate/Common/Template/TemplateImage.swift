@@ -4,7 +4,7 @@ import UIKit
 enum TemplateImage: String {
 	case image1, image2, image3
 	case image4, image5, image6
-	case image7, image8
+	case image7, image8, image9
 }
 
 // MARK: - Public Extensions

@@ -3,6 +3,8 @@ import UIKit
 
 final class VideoWriterActionsFactory {
 
+	// MARK: - Static
+
 	static let shared = VideoWriterActionsFactory(
 		backgroundsSeparator: .shared
 	)
@@ -89,12 +91,26 @@ private extension VideoWriterActionsFactory {
 			guard let asset = assets[layer.templateImage]
 			else { fatalError("No expected assset") }
 
-			let usedImage = asset.getImage(
+			var usedImage = asset.getImage(
 				by: layer.templateImageType
 			)
 
+			if layer.rotation != 0 {
+				usedImage = usedImage.rotate(radians: layer.rotation)
+			}
+
+			if layer.sizeScale != 1 {
+				usedImage = usedImage.resized(
+					to: usedImage.size * layer.sizeScale,
+					scale: usedImage.scale
+				)
+			}
+
 			guard
-				let mergedImage = image.adding(image: usedImage, at: layer.offset)
+				let mergedImage = image.adding(
+					image: usedImage,
+					at: layer.offset
+				)
 			else { fatalError("No expected assset") }
 
 			image = mergedImage
@@ -122,7 +138,7 @@ private extension VideoWriterActionsFactory {
 
 }
 
-// MARK: - Private extension
+// MARK: - Private extensions
 
 private extension Array where Element == TemplateAsset {
 

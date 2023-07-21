@@ -16,12 +16,13 @@ struct TemplateView: View {
 	// MARK: - Body
 
 	var body: some View {
-		ZStack(alignment: .bottom) {
-			backgroundView()
+		ZStack {
+			Color.accentColor
 
-//			shareButton()
-//				.padding(.bottom, 32)
-//				.padding(.horizontal)
+			contentView()
+		}
+		.overlay {
+			overlayView()
 		}
 		.ignoresSafeArea()
 		.onAppear {
@@ -55,8 +56,8 @@ extension TemplateView {
 	}
 
 	@ViewBuilder
-	private func backgroundView() -> some View {
-		switch viewModel.background {
+	private func contentView() -> some View {
+		switch viewModel.content {
 		case .progressIndicator:
 			ProgressView()
 				.controlSize(.large)
@@ -69,6 +70,18 @@ extension TemplateView {
 		case let .video(viewModel):
 			VideoPlayerView(viewModel: viewModel)
 
+		}
+	}
+
+	private func overlayView() -> some View {
+		ZStack(alignment: .bottom) {
+			Color.clear
+
+			if viewModel.isShareButtonVisible {
+				shareButton()
+					.padding(.bottom, 32)
+					.padding(.horizontal)
+			}
 		}
 	}
 

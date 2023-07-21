@@ -1,4 +1,5 @@
 
+import AVFoundation
 import CoreMedia
 import Foundation
 import UIKit
@@ -9,16 +10,20 @@ final class TemplateViewModel: ObservableObject {
 
 	// MARK: Public
 
-	@Published private(set) var background: TemplateViewBackground = .progressIndicator
+	@Published private(set) var isShareButtonVisible = false
+	@Published private(set) var content: TemplateViewContent = .progressIndicator
 
 	// MARK: Private
 
 	private let fileManager: FileManager
 	private let videoWriterActionsFactory: VideoWriterActionsFactory
 
+	private var assetUrl: URL?
+
 	// MARK: Input
 
 	private let templateActions: [TemplateAction]
+	private let templateAudio: TemplateAudio
 	private let templateSize: CGSize
 
 	// MARK: - Init
@@ -36,6 +41,7 @@ final class TemplateViewModel: ObservableObject {
 		let info = templateInfoFactory.info(by: input.template)
 
 		templateActions = info.actions
+		templateAudio = info.audio
 		templateSize = info.size
 	}
 
@@ -48,14 +54,30 @@ final class TemplateViewModel: ObservableObject {
 				templateSize: templateSize
 			)
 
-			DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+			DispatchQueue.main.async { [weak self] in
 				self?.fetchVideo(with: actions)
 			}
 		}
 	}
 
 	public func onShareButton() {
-		
+		guard let assetUrl else { return }
+
+		let activityVC = UIActivityViewController(
+			activityItems: [assetUrl],
+			applicationActivities: nil
+		)
+
+		// Not very elegant, but there's no extra time either
+		let allScenes = UIApplication.shared.connectedScenes
+		let scene = allScenes.first { $0.activationState == .foregroundActive }
+
+		if let windowScene = scene as? UIWindowScene {
+			windowScene.keyWindow?.rootViewController?.present(
+				activityVC,
+				animated: true
+			)
+		}
 	}
 
 }
@@ -67,6 +89,22 @@ extension TemplateViewModel {
 	private func fetchVideo(
 		with actions: [VideoWriterAction]
 	) {
+		guard let videoAssetPath = try? prepareVideoAssetPath()
+		else { fatalError("Failed to create path") }
+
+		guard
+			let videoWriter = VideoWriter(
+				url: URL(filePath: videoAssetPath),
+				width: Int(templateSize.width),
+				height: Int(templateSize.height),
+				sessionStartTime: .zero
+			)
+		else { fatalError("Failed to create VideoWriter") }
+
+		append(actions: actions, to: videoWriter)
+	}
+
+	private func prepareVideoAssetPath() throws -> String {
 		let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
 
 		guard let documentDirectory = urls.first
@@ -78,43 +116,73 @@ extension TemplateViewModel {
 		let videoOutputPath = videoOutputUrl.path()
 
 		if fileManager.fileExists(atPath: videoOutputPath) {
-			do {
-				try fileManager.removeItem(at: videoOutputUrl)
-			} catch {
-				print("Failed to remove item at path: \(videoOutputPath)")
+			try fileManager.removeItem(at: videoOutputUrl)
+		}
+
+		return videoOutputPath
+	}
+
+	private func append(
+		actions: [VideoWriterAction],
+		to videoWriter: VideoWriter
+	) {
+		let group = DispatchGroup()
+
+		for (index, action) in actions.enumerated() {
+			let delay = Double(index) / 10
+
+			group.enter()
+
+			DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+				videoWriter.append(action: action)
+				group.leave()
 			}
 		}
 
+		group.notify(queue: .main) {
+			videoWriter.finish { [weak self] asset in
+				guard let asset else { fatalError() }
+
+				self?.mergeWithAudio(videoAsset: asset)
+
+			}
+		}
+	}
+
+	private func mergeWithAudio(
+		videoAsset: AVURLAsset
+	) {
 		guard
-			let videoWriter = VideoWriter(
-				url: videoOutputUrl,
-				width: Int(templateSize.width),
-				height: Int(templateSize.height),
-				sessionStartTime: .zero
-			)
-		else { fatalError("Failed to create VideoWriter") }
+			let audioUrl = Bundle.main.url(
+			forResource: templateAudio.fileName(),
+			withExtension: templateAudio.fileExtension()
+		)
+		else { return showVideo(at: videoAsset.url) }
 
-		for action in actions {
-			videoWriter.add(
-				image: action.image,
-				presentationTime: action.time
+		Task(priority: .background) {
+			let mergedVideoUrl = try await VideoMerger.srared.merge(
+				videoUrl: videoAsset.url,
+				audioUrl: audioUrl
 			)
+
+			await MainActor.run {
+				showVideo(at: mergedVideoUrl)
+			}
 		}
+	}
 
-		videoWriter.finish(
-			in: .main
-		) { [weak self] asset in
-			guard let asset else { fatalError() }
-
-			self?.background = .video(
-				viewModel: VideoPlayerViewModel(
-					notificationCenter: .default,
-					url: asset.url,
-					isRepeating: true,
-					avLayerVideoGravity: .resizeAspectFill
-				)
+	private func showVideo(at url: URL) {
+		content = .video(
+			viewModel: VideoPlayerViewModel(
+				notificationCenter: .default,
+				url: url,
+				isRepeating: true,
+				avLayerVideoGravity: .resizeAspectFill
 			)
-		}
+		)
+
+		assetUrl = url
+		isShareButtonVisible = true
 	}
 
 }

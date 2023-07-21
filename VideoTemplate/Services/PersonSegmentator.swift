@@ -5,6 +5,10 @@ import Vision
 
 final class PersonSegmentator {
 
+	// MARK: - Static
+
+	static let shared = PersonSegmentator()
+
 	// MARK: - Public methods
 
 	func segment(image: CGImage) throws -> CIImage {

@@ -1,9 +1,7 @@
 
 import SwiftUI
 
-enum TemplateViewBackground {
-
+enum TemplateViewContent {
 	case progressIndicator
 	case video(viewModel: VideoPlayerViewModel)
-
 }

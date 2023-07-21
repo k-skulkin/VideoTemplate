@@ -18,20 +18,28 @@ extension UIImage {
 	}
 
 	func resized(toHeight height: CGFloat) -> UIImage {
-		let k = height / size.height
-		let size = CGSize(width: size.width * k, height: height)
+		let ratio = height / size.height
+		let size = CGSize(width: size.width * ratio, height: height)
+
 		return resized(to: size)
 	}
 
 	func resized(toWidth width: CGFloat) -> UIImage {
-		let k = width / size.width
-		let size = CGSize(width: width, height: size.height * k)
+		let ratio = width / size.width
+		let size = CGSize(width: width, height: size.height * ratio)
+
 		return resized(to: size)
 	}
 
 	func resized(to maxSize: CGFloat) -> UIImage {
 		let ratio = maxSize / max(size.width, size.height)
-		let ratioImage = resized(to: CGSize(width: size.width * ratio, height: size.height * ratio))
+		let ratioImage = resized(
+			to: CGSize(
+				width: size.width * ratio,
+				height: size.height * ratio
+			)
+		)
+
 		return ratioImage
 	}
 

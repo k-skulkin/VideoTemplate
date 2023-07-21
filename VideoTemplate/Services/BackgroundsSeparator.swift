@@ -5,7 +5,11 @@ import UIKit
 
 final class BackgroundsSeparator {
 
-	static let shared = BackgroundsSeparator()
+	// MARK: - Static
+
+	static let shared = BackgroundsSeparator(
+		personSegmentator: .shared
+	)
 
 	// MARK: - Properties
 
@@ -14,7 +18,7 @@ final class BackgroundsSeparator {
 	// MARK: - Init
 
 	init(
-		personSegmentator: PersonSegmentator = PersonSegmentator()
+		personSegmentator: PersonSegmentator
 	) {
 		self.personSegmentator = personSegmentator
 	}
